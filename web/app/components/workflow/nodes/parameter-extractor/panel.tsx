@@ -16,8 +16,7 @@ import Split from '@/app/components/workflow/nodes/_base/components/split'
 import ModelParameterModal from '@/app/components/header/account-setting/model-provider-page/model-parameter-modal'
 import OutputVars, { VarItem } from '@/app/components/workflow/nodes/_base/components/output-vars'
 import { InputVarType, type NodePanelProps } from '@/app/components/workflow/types'
-import TooltipPlus from '@/app/components/base/tooltip-plus'
-import { HelpCircle } from '@/app/components/base/icons/src/vender/line/general'
+import Tooltip from '@/app/components/base/tooltip'
 import BeforeRunForm from '@/app/components/workflow/nodes/_base/components/before-run-form'
 import { VarType } from '@/app/components/workflow/types'
 
@@ -124,12 +123,14 @@ const Panel: FC<NodePanelProps<ParameterExtractorNodeType>> = ({
           title={
             <div className='flex items-center space-x-1'>
               <span className='uppercase'>{t(`${i18nPrefix}.instruction`)}</span>
-              <TooltipPlus popupContent={
-                <div className='w-[120px]'>
-                  {t(`${i18nPrefix}.instructionTip`)}
-                </div>}>
-                <HelpCircle className='w-3.5 h-3.5 ml-0.5 text-gray-400' />
-              </TooltipPlus>
+              <Tooltip
+                popupContent={
+                  <div className='w-[120px]'>
+                    {t(`${i18nPrefix}.instructionTip`)}
+                  </div>
+                }
+                triggerClassName='w-3.5 h-3.5 ml-0.5'
+              />
             </div>
           }
           value={inputs.instruction}
@@ -176,6 +177,14 @@ const Panel: FC<NodePanelProps<ParameterExtractorNodeType>> = ({
         <div className='px-4 pt-4 pb-2'>
           <OutputVars>
             <>
+              {inputs.parameters.map((param, index) => (
+                <VarItem
+                  key={index}
+                  name={param.name}
+                  type={param.type}
+                  description={param.description}
+                />
+              ))}
               <VarItem
                 name='__is_success'
                 type={VarType.number}
@@ -186,14 +195,6 @@ const Panel: FC<NodePanelProps<ParameterExtractorNodeType>> = ({
                 type={VarType.string}
                 description={t(`${i18nPrefix}.errorReason`)}
               />
-              {inputs.parameters.map((param, index) => (
-                <VarItem
-                  key={index}
-                  name={param.name}
-                  type={param.type}
-                  description={param.description}
-                />
-              ))}
             </>
           </OutputVars>
         </div>

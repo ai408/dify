@@ -3,9 +3,9 @@ import type { FC } from 'react'
 import React, { useCallback, useState } from 'react'
 import produce from 'immer'
 import { useTranslation } from 'react-i18next'
-import cn from 'classnames'
 import type { ToolVarInputs } from '../types'
 import { VarType as VarKindType } from '../types'
+import cn from '@/utils/classnames'
 import type { ValueSelector, Var } from '@/app/components/workflow/types'
 import type { CredentialFormSchema } from '@/app/components/header/account-setting/model-provider-page/declarations'
 import { FormTypeEnum } from '@/app/components/header/account-setting/model-provider-page/declarations'
@@ -37,10 +37,10 @@ const InputVarList: FC<Props> = ({
 }) => {
   const language = useLanguage()
   const { t } = useTranslation()
-  const { availableVars, availableNodes } = useAvailableVarList(nodeId, {
+  const { availableVars, availableNodesWithParent } = useAvailableVarList(nodeId, {
     onlyLeafNodeVar: false,
     filterVar: (varPayload: Var) => {
-      return [VarType.string, VarType.number].includes(varPayload.type)
+      return [VarType.string, VarType.number, VarType.secret].includes(varPayload.type)
     },
   })
   const paramType = (type: string) => {
@@ -48,6 +48,8 @@ const InputVarList: FC<Props> = ({
       return 'Number'
     else if (type === FormTypeEnum.files)
       return 'Files'
+    else if (type === FormTypeEnum.select)
+      return 'Options'
     else
       return 'String'
   }
@@ -114,17 +116,19 @@ const InputVarList: FC<Props> = ({
   return (
     <div className='space-y-3'>
       {
-        schema.map(({
-          variable,
-          label,
-          type,
-          required,
-          tooltip,
-        }, index) => {
+        schema.map((schema, index) => {
+          const {
+            variable,
+            label,
+            type,
+            required,
+            tooltip,
+          } = schema
           const varInput = value[variable]
           const isNumber = type === FormTypeEnum.textNumber
+          const isSelect = type === FormTypeEnum.select
           const isFile = type === FormTypeEnum.files
-          const isString = type !== FormTypeEnum.textNumber && type !== FormTypeEnum.files
+          const isString = type !== FormTypeEnum.textNumber && type !== FormTypeEnum.files && type !== FormTypeEnum.select
           return (
             <div key={variable} className='space-y-1'>
               <div className='flex items-center h-[18px] space-x-2'>
@@ -139,13 +143,13 @@ const InputVarList: FC<Props> = ({
                   onChange={handleMixedTypeChange(variable)}
                   readOnly={readOnly}
                   nodesOutputVars={availableVars}
-                  availableNodes={availableNodes}
+                  availableNodes={availableNodesWithParent}
                   onFocusChange={handleInputFocus(variable)}
                   placeholder={t('workflow.nodes.http.insertVarPlaceholder')!}
                   placeholderClassName='!leading-[21px]'
                 />
               )}
-              {isNumber && (
+              {(isNumber || isSelect) && (
                 <VarReferencePicker
                   readonly={readOnly}
                   isShowNodeName
@@ -155,7 +159,9 @@ const InputVarList: FC<Props> = ({
                   onOpen={handleOpen(index)}
                   isSupportConstantValue={isSupportConstantValue}
                   defaultVarKindType={varInput?.type}
-                  filterVar={filterVar}
+                  filterVar={isNumber ? filterVar : undefined}
+                  availableVars={isSelect ? availableVars : undefined}
+                  schema={schema}
                 />
               )}
               {isFile && (

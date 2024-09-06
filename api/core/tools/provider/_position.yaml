@@ -1,12 +1,16 @@
 - google
 - bing
 - duckduckgo
+- searchapi
+- serper
 - searxng
 - dalle
 - azuredalle
 - stability
 - wikipedia
+- nominatim
 - yahoo
+- alphavantage
 - arxiv
 - pubmed
 - stablediffusion
@@ -26,4 +30,8 @@
 - qrcode
 - dingtalk
 - feishu
+- feishu_base
+- feishu_document
+- feishu_message
 - slack
+- tianditu

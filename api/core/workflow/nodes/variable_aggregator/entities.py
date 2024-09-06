@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from core.workflow.entities.base_node_data_entities import BaseNodeData
 
 
-class AdvancedSetting(BaseModel):
+class AdvancedSettings(BaseModel):
     """
     Advanced setting.
     """
@@ -17,7 +17,7 @@ class AdvancedSetting(BaseModel):
         """
         Group.
         """
-        output_type: Literal['string', 'number', 'array', 'object']
+        output_type: Literal['string', 'number', 'object', 'array[string]', 'array[number]', 'array[object]']
         variables: list[list[str]]
         group_name: str
 
@@ -30,4 +30,4 @@ class VariableAssignerNodeData(BaseNodeData):
     type: str = 'variable-assigner'
     output_type: str
     variables: list[list[str]]
-    advanced_setting: Optional[AdvancedSetting]
+    advanced_settings: Optional[AdvancedSettings] = None

@@ -2,7 +2,6 @@ import {
   useMemo,
   useState,
 } from 'react'
-import cn from 'classnames'
 import type {
   OnSelectBlock,
   ToolWithProvider,
@@ -11,6 +10,7 @@ import { useStore } from '../store'
 import { ToolTypeEnum } from './types'
 import Tools from './tools'
 import { useToolTabs } from './hooks'
+import cn from '@/utils/classnames'
 import { useGetLanguage } from '@/context/i18n'
 
 type AllToolsProps = {
@@ -31,7 +31,7 @@ const AllTools = ({
   const tools = useMemo(() => {
     let mergedTools: ToolWithProvider[] = []
     if (activeTab === ToolTypeEnum.All)
-      mergedTools = [...buildInTools, ...customTools]
+      mergedTools = [...buildInTools, ...customTools, ...workflowTools]
     if (activeTab === ToolTypeEnum.BuiltIn)
       mergedTools = buildInTools
     if (activeTab === ToolTypeEnum.Custom)

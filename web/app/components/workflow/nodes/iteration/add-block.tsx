@@ -3,21 +3,25 @@ import {
   useCallback,
 } from 'react'
 import produce from 'immer'
-import cn from 'classnames'
+import {
+  RiAddLine,
+} from '@remixicon/react'
 import { useStoreApi } from 'reactflow'
 import { useTranslation } from 'react-i18next'
 import {
   generateNewNode,
 } from '../../utils'
 import {
+  WorkflowHistoryEvent,
   useAvailableBlocks,
   useNodesReadOnly,
+  useWorkflowHistory,
 } from '../../hooks'
 import { NODES_INITIAL_DATA } from '../../constants'
 import InsertBlock from './insert-block'
 import type { IterationNodeType } from './types'
+import cn from '@/utils/classnames'
 import BlockSelector from '@/app/components/workflow/block-selector'
-import { Plus } from '@/app/components/base/icons/src/vender/line/general'
 import { IterationStart } from '@/app/components/base/icons/src/vender/workflow'
 import type {
   OnSelectBlock,
@@ -25,7 +29,7 @@ import type {
 import {
   BlockEnum,
 } from '@/app/components/workflow/types'
-import TooltipPlus from '@/app/components/base/tooltip-plus'
+import Tooltip from '@/app/components/base/tooltip'
 
 type AddBlockProps = {
   iterationNodeId: string
@@ -40,6 +44,7 @@ const AddBlock = ({
   const { nodesReadOnly } = useNodesReadOnly()
   const { availableNextBlocks } = useAvailableBlocks(BlockEnum.Start, true)
   const { availablePrevBlocks } = useAvailableBlocks(iterationNodeData.startNodeType, true)
+  const { saveStateToHistory } = useWorkflowHistory()
 
   const handleSelect = useCallback<OnSelectBlock>((type, toolDefaultValue) => {
     const {
@@ -76,7 +81,8 @@ const AddBlock = ({
       draft.push(newNode)
     })
     setNodes(newNodes)
-  }, [store, t, iterationNodeId])
+    saveStateToHistory(WorkflowHistoryEvent.NodeAdd)
+  }, [store, t, iterationNodeId, saveStateToHistory])
 
   const renderTriggerElement = useCallback((open: boolean) => {
     return (
@@ -85,7 +91,7 @@ const AddBlock = ({
         `${nodesReadOnly && '!cursor-not-allowed opacity-50'}`,
         open && '!bg-gray-50',
       )}>
-        <Plus className='mr-1 w-4 h-4' />
+        <RiAddLine className='mr-1 w-4 h-4' />
         {t('workflow.common.addBlock')}
       </div>
     )
@@ -93,11 +99,11 @@ const AddBlock = ({
 
   return (
     <div className='absolute top-12 left-6 flex items-center h-8 z-10'>
-      <TooltipPlus popupContent={t('workflow.blocks.iteration-start')}>
+      <Tooltip popupContent={t('workflow.blocks.iteration-start')}>
         <div className='flex items-center justify-center w-6 h-6 rounded-full border-[0.5px] border-black/[0.02] shadow-md bg-primary-500'>
           <IterationStart className='w-4 h-4 text-white' />
         </div>
-      </TooltipPlus>
+      </Tooltip>
       <div className='group/insert relative w-16 h-0.5 bg-gray-300'>
         {
           iterationNodeData.startNodeType && (

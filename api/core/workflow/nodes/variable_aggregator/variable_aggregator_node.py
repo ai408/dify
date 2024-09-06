@@ -18,27 +18,28 @@ class VariableAggregatorNode(BaseNode):
         outputs = {}
         inputs = {}
 
-        if not node_data.advanced_setting or node_data.advanced_setting.group_enabled:
-            for variable in node_data.variables:
-                value = variable_pool.get_variable_value(variable)
-
-                if value is not None:
+        if not node_data.advanced_settings or not node_data.advanced_settings.group_enabled:
+            for selector in node_data.variables:
+                variable = variable_pool.get_any(selector)
+                if variable is not None:
                     outputs = {
-                        "output": value
+                        "output": variable
                     }
 
                     inputs = {
-                        '.'.join(variable[1:]): value
+                        '.'.join(selector[1:]): variable
                     }
                     break
         else:
-            for group in node_data.advanced_setting.groups:
-                for variable in group.variables:
-                    value = variable_pool.get_variable_value(variable)
+            for group in node_data.advanced_settings.groups:
+                for selector in group.variables:
+                    variable = variable_pool.get_any(selector)
 
-                    if value is not None:
-                        outputs[f'{group.group_name}_output'] = value
-                        inputs['.'.join(variable[1:])] = value
+                    if variable is not None:
+                        outputs[group.group_name] = {
+                            'output': variable
+                        }
+                        inputs['.'.join(selector[1:])] = variable
                         break
 
         return NodeRunResult(
