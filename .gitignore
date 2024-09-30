@@ -188,3 +188,9 @@ api/.vscode
 
 .idea/
 .vscode
+
+# backup files
+*.bak
+*.tgz
+*.png_bk
+web/public/logo/*
