@@ -1,8 +1,8 @@
 import concurrent.futures
 import io
 import random
+import warnings
 from typing import Any, Literal, Optional, Union
-from warnings import catch_warnings, simplefilter
 
 import openai
 
@@ -10,8 +10,8 @@ from core.tools.entities.tool_entities import ToolInvokeMessage
 from core.tools.errors import ToolParameterValidationError, ToolProviderCredentialValidationError
 from core.tools.tool.builtin_tool import BuiltinTool
 
-with catch_warnings():
-    simplefilter("ignore", category=RuntimeWarning)
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore")
     from pydub import AudioSegment
 
 
