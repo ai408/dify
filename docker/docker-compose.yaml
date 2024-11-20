@@ -361,6 +361,9 @@ services:
       interval: 1s
       timeout: 3s
       retries: 30
+    networks:
+      - shared_network
+      - default
 
   # The redis cache.
   redis:
@@ -840,6 +843,8 @@ networks:
   opensearch-net:
     driver: bridge
     internal: true
+  shared_network:
+    external: true
 
 volumes:
   oradata:
