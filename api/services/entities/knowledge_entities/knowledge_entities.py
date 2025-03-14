@@ -88,16 +88,22 @@ class RetrievalModel(BaseModel):
     search_method: Literal["hybrid_search", "semantic_search", "full_text_search"]
     reranking_enable: bool
     reranking_model: Optional[RerankingModel] = None
+    reranking_mode: Optional[str] = None
     top_k: int
     score_threshold_enabled: bool
     score_threshold: Optional[float] = None
+
+
+class MetaDataConfig(BaseModel):
+    doc_type: str
+    doc_metadata: dict
 
 
 class KnowledgeConfig(BaseModel):
     original_document_id: Optional[str] = None
     duplicate: bool = True
     indexing_technique: Literal["high_quality", "economy"]
-    data_source: DataSource
+    data_source: Optional[DataSource] = None
     process_rule: Optional[ProcessRule] = None
     retrieval_model: Optional[RetrievalModel] = None
     doc_form: str = "text_model"
@@ -105,6 +111,7 @@ class KnowledgeConfig(BaseModel):
     embedding_model: Optional[str] = None
     embedding_model_provider: Optional[str] = None
     name: Optional[str] = None
+    metadata: Optional[MetaDataConfig] = None
 
 
 class SegmentUpdateArgs(BaseModel):
