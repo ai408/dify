@@ -15,11 +15,11 @@ from services.feature_service import FeatureService
 
 
 @app.celery.task(queue="dataset")
-def send_document_clean_notify_task():
+def mail_clean_document_notify_task():
     """
     Async Send document clean notify mail
 
-    Usage: send_document_clean_notify_task.delay()
+    Usage: mail_clean_document_notify_task.delay()
     """
     if not mail.is_inited():
         return
@@ -47,7 +47,9 @@ def send_document_clean_notify_task():
                 if not tenant:
                     continue
                 # check current owner
-                current_owner_join = TenantAccountJoin.query.filter_by(tenant_id=tenant.id, role="owner").first()
+                current_owner_join = (
+                    db.session.query(TenantAccountJoin).filter_by(tenant_id=tenant.id, role="owner").first()
+                )
                 if not current_owner_join:
                     continue
                 account = Account.query.filter(Account.id == current_owner_join.account_id).first()
