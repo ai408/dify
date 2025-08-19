@@ -29,6 +29,9 @@ const translation = {
       delete: 'हटाएँ',
       enableWarning: 'संग्रहित फाइल को सक्रिय नहीं किया जा सकता',
       sync: 'सिंक्रोनाइज़ करें',
+      resume: 'रिज़्यूमे',
+      pause: 'रोकें',
+      download: 'फ़ाइल डाउनलोड करें',
     },
     index: {
       enable: 'सक्रिय करें',
@@ -371,6 +374,7 @@ const translation = {
     addChunk: 'चंक जोड़ें',
     editChildChunk: 'संपादित करें बाल चंक',
     editedAt: 'पर संपादित',
+    dateTimeFormat: 'MM/DD/YYYY h:mm',
     childChunk: 'चाइल्ड-चंक',
     parentChunk: 'माता-पिता-चंक',
     empty: 'कोई हिस्सा नहीं मिला',
