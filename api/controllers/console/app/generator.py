@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 
 from flask_login import current_user
-from flask_restful import Resource, reqparse
+from flask_restx import Resource, reqparse
 
 from controllers.console import api
 from controllers.console.app.error import (
@@ -207,7 +207,7 @@ class InstructionGenerationTemplateApi(Resource):
     @setup_required
     @login_required
     @account_initialization_required
-    def post(self) -> dict:
+    def post(self):
         parser = reqparse.RequestParser()
         parser.add_argument("type", type=str, required=True, default=False, location="json")
         args = parser.parse_args()
