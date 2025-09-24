@@ -2,7 +2,7 @@ import queue
 import time
 from abc import abstractmethod
 from enum import IntEnum, auto
-from typing import Any, Optional
+from typing import Any
 
 from sqlalchemy.orm import DeclarativeMeta
 
@@ -32,6 +32,7 @@ class AppQueueManager:
         self._task_id = task_id
         self._user_id = user_id
         self._invoke_from = invoke_from
+        self.invoke_from = invoke_from  # Public accessor for invoke_from
 
         user_prefix = "account" if self._invoke_from in {InvokeFrom.EXPLORE, InvokeFrom.DEBUGGER} else "end-user"
         redis_client.setex(
@@ -115,12 +116,27 @@ class AppQueueManager:
         Set task stop flag
         :return:
         """
-        result: Optional[Any] = redis_client.get(cls._generate_task_belong_cache_key(task_id))
+        result: Any | None = redis_client.get(cls._generate_task_belong_cache_key(task_id))
         if result is None:
             return
 
         user_prefix = "account" if invoke_from in {InvokeFrom.EXPLORE, InvokeFrom.DEBUGGER} else "end-user"
         if result.decode("utf-8") != f"{user_prefix}-{user_id}":
+            return
+
+        stopped_cache_key = cls._generate_stopped_cache_key(task_id)
+        redis_client.setex(stopped_cache_key, 600, 1)
+
+    @classmethod
+    def set_stop_flag_no_user_check(cls, task_id: str) -> None:
+        """
+        Set task stop flag without user permission check.
+        This method allows stopping workflows without user context.
+
+        :param task_id: The task ID to stop
+        :return:
+        """
+        if not task_id:
             return
 
         stopped_cache_key = cls._generate_stopped_cache_key(task_id)
