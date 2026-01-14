@@ -144,7 +144,8 @@ class DatasetService:
             query = query.where(Dataset.permission == DatasetPermissionEnum.ALL_TEAM)
 
         if search:
-            query = query.where(Dataset.name.ilike(f"%{search}%"))
+            escaped_search = helper.escape_like_pattern(search)
+            query = query.where(Dataset.name.ilike(f"%{escaped_search}%", escape="\\"))
 
         # Check if tag_ids is not empty to avoid WHERE false condition
         if tag_ids and len(tag_ids) > 0:
@@ -1419,7 +1420,7 @@ class DocumentService:
 
         document.name = name
         db.session.add(document)
-        if document.data_source_info_dict:
+        if document.data_source_info_dict and "upload_file_id" in document.data_source_info_dict:
             db.session.query(UploadFile).where(
                 UploadFile.id == document.data_source_info_dict["upload_file_id"]
             ).update({UploadFile.name: name})
@@ -3423,7 +3424,8 @@ class SegmentService:
             .order_by(ChildChunk.position.asc())
         )
         if keyword:
-            query = query.where(ChildChunk.content.ilike(f"%{keyword}%"))
+            escaped_keyword = helper.escape_like_pattern(keyword)
+            query = query.where(ChildChunk.content.ilike(f"%{escaped_keyword}%", escape="\\"))
         return db.paginate(select=query, page=page, per_page=limit, max_per_page=100, error_out=False)
 
     @classmethod
@@ -3456,9 +3458,10 @@ class SegmentService:
             query = query.where(DocumentSegment.status.in_(status_list))
 
         if keyword:
-            query = query.where(DocumentSegment.content.ilike(f"%{keyword}%"))
+            escaped_keyword = helper.escape_like_pattern(keyword)
+            query = query.where(DocumentSegment.content.ilike(f"%{escaped_keyword}%", escape="\\"))
 
-        query = query.order_by(DocumentSegment.position.asc())
+        query = query.order_by(DocumentSegment.position.asc(), DocumentSegment.id.asc())
         paginated_segments = db.paginate(select=query, page=page, per_page=limit, max_per_page=100, error_out=False)
 
         return paginated_segments.items, paginated_segments.total

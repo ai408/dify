@@ -8,6 +8,7 @@ from sqlalchemy import or_, select
 from werkzeug.datastructures import FileStorage
 from werkzeug.exceptions import NotFound
 
+from core.helper.csv_sanitizer import CSVSanitizer
 from extensions.ext_database import db
 from extensions.ext_redis import redis_client
 from libs.datetime_utils import naive_utc_now
@@ -76,7 +77,7 @@ class AppAnnotationService:
         if annotation_setting:
             add_annotation_to_index_task.delay(
                 annotation.id,
-                annotation.question,
+                question,
                 current_tenant_id,
                 app_id,
                 annotation_setting.collection_binding_id,
@@ -136,13 +137,16 @@ class AppAnnotationService:
         if not app:
             raise NotFound("App not found")
         if keyword:
+            from libs.helper import escape_like_pattern
+
+            escaped_keyword = escape_like_pattern(keyword)
             stmt = (
                 select(MessageAnnotation)
                 .where(MessageAnnotation.app_id == app_id)
                 .where(
                     or_(
-                        MessageAnnotation.question.ilike(f"%{keyword}%"),
-                        MessageAnnotation.content.ilike(f"%{keyword}%"),
+                        MessageAnnotation.question.ilike(f"%{escaped_keyword}%", escape="\\"),
+                        MessageAnnotation.content.ilike(f"%{escaped_keyword}%", escape="\\"),
                     )
                 )
                 .order_by(MessageAnnotation.created_at.desc(), MessageAnnotation.id.desc())
@@ -158,6 +162,12 @@ class AppAnnotationService:
 
     @classmethod
     def export_annotation_list_by_app_id(cls, app_id: str):
+        """
+        Export all annotations for an app with CSV injection protection.
+
+        Sanitizes question and content fields to prevent formula injection attacks
+        when exported to CSV format.
+        """
         # get app info
         _, current_tenant_id = current_account_with_tenant()
         app = (
@@ -174,6 +184,16 @@ class AppAnnotationService:
             .order_by(MessageAnnotation.created_at.desc())
             .all()
         )
+
+        # Sanitize CSV-injectable fields to prevent formula injection
+        for annotation in annotations:
+            # Sanitize question field if present
+            if annotation.question:
+                annotation.question = CSVSanitizer.sanitize_value(annotation.question)
+            # Sanitize content field (answer)
+            if annotation.content:
+                annotation.content = CSVSanitizer.sanitize_value(annotation.content)
+
         return annotations
 
     @classmethod
@@ -236,7 +256,7 @@ class AppAnnotationService:
         if app_annotation_setting:
             update_annotation_to_index_task.delay(
                 annotation.id,
-                annotation.question,
+                annotation.question_text,
                 current_tenant_id,
                 app_id,
                 app_annotation_setting.collection_binding_id,
